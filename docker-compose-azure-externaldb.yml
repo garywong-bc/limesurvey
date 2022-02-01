@@ -1,11 +1,11 @@
-version: '3.3'
+version: "3.3"
 
 services:
-  limesurvey:
+  app:
     image: acspri/limesurvey
     volumes:
-     - ${WEBAPP_STORAGE_HOME}/site/plugins:/var/www/html/plugins
-     - ${WEBAPP_STORAGE_HOME}/site/upload:/var/www/html/upload
+      - ${WEBAPP_STORAGE_HOME}/site/plugins:/var/www/html/plugins
+      - ${WEBAPP_STORAGE_HOME}/site/upload:/var/www/html/upload
     environment:
       LIMESURVEY_ADMIN_USER: admin
       LIMESURVEY_ADMIN_PASSWORD: password

@@ -1,25 +1,26 @@
-version: '2'
+version: "3.3"
 
-services: 
-
-  limesurvey:
+services:
+  app:
     image: acspri/limesurvey:5.2.11.1
-    build: .
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    build: ./app
     ports:
       - 8082:80
     environment:
-      LIMESURVEY_DB_PASSWORD: e/xa|m|ple
-      LIMESURVEY_ADMIN_USER: admin
-      LIMESURVEY_ADMIN_PASSWORD: password
-      LIMESURVEY_ADMIN_NAME: Lime Administrator
-      LIMESURVEY_ADMIN_EMAIL: lime@lime.lime
+      LIMESURVEY_DB_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
+      LIMESURVEY_ADMIN_USER: ${LIMESURVEY_ADMIN_USER:-admin}
+      LIMESURVEY_ADMIN_PASSWORD: ${LIMESURVEY_ADMIN_PASSWORD:-password}
+      LIMESURVEY_ADMIN_NAME: ${LIMESURVEY_ADMIN_NAME:-Lime Administrator}
+      LIMESURVEY_ADMIN_EMAIL: ${LIMESURVEY_ADMIN_EMAIL:-lime@lime.lime}
     volumes:
-      - ./plugins:/var/www/html/plugins
-      - ./upload:/var/www/html/upload
-      - ./config:/var/www/html/application/config
+      - ./volumes/plugins:/var/www/html/plugins
+      - ./volumes/upload:/var/www/html/upload
+      - ./volumes/config:/var/www/html/application/config
 
   mysql:
-    image: mariadb
+    image: mariadb:10.3
     environment:
-      MYSQL_ROOT_PASSWORD: e/xa|m|ple
-
+      MYSQL_ROOT_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
