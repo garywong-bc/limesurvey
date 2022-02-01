@@ -1,7 +1,8 @@
 FROM php:8.0-apache
 
-ENV DOWNLOAD_URL https://download.limesurvey.org/latest-stable-release/limesurvey5.2.11+220124.zip
-ENV DOWNLOAD_SHA256 2b9364a6885484f35f878f06603262ad00ca5d3fe3a715f7a28174755efe16c3
+# As per https://account.limesurvey.org/stable-release
+ENV DOWNLOAD_URL https://download.limesurvey.org/latest-stable-release/limesurvey5.2.12+220131.zip
+ENV DOWNLOAD_SHA256 f615cd2f5d1eff32e6fd5269861fc002244896d2939a38edef030471f3e91038
 
 # install the PHP extensions we need
 RUN apt-get update && apt-get install -y unzip libc-client-dev libfreetype6-dev libmcrypt-dev libpng-dev libjpeg-dev libldap-common libldap2-dev zlib1g-dev libkrb5-dev libtidy-dev libzip-dev libsodium-dev && rm -rf /var/lib/apt/lists/* \
@@ -29,6 +30,9 @@ RUN { \
 		echo 'opcache.enable_cli=1'; \
 	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
+RUN useradd --comment "Apache User, integrated with non-root default user" \
+    -g root -m -u 1001 default_user  
+
 RUN set -x; \
     curl -SL "$DOWNLOAD_URL" -o /tmp/lime.zip; \
     echo "$DOWNLOAD_SHA256 /tmp/lime.zip" | sha256sum -c - || exit 1; \
@@ -37,7 +41,7 @@ RUN set -x; \
     mv /tmp/lime*/.[a-zA-Z]* /var/www/html/; \
     rm /tmp/lime.zip; \
     rmdir /tmp/lime*; \
-    chown -R www-data:www-data /var/www/html; \
+    chown -R default_user:root /var/www/html; \
     mkdir -p /var/lime/application/config; \
     mkdir -p /var/lime/upload; \
     mkdir -p /var/lime/plugins; \
@@ -55,6 +59,13 @@ RUN { \
         echo 'date.timezone=UTC'; \
 	} > /usr/local/etc/php/conf.d/uploads.ini
 
+# Set Apache defaults for Limesurvey (ServerName and default port > 1024), and
+# also enable "/server-status?auto" for integration with Sysdig
+RUN sed -i '$ a ServerName localhost'     /etc/apache2/apache2.conf   \
+    && sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf    \
+    && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-enabled/000-default.conf \
+    && sed -i '/RewriteCond %{REQUEST_FILENAME} !-d$/a \    RewriteCond %{REQUEST_URI} !=/server-status' /var/www/html/.htaccess
+
 VOLUME ["/var/www/html/plugins"]
 VOLUME ["/var/www/html/upload"]
 
@@ -68,3 +79,5 @@ RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
 # ENTRYPOINT resets CMD
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
+
+USER default_user

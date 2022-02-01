@@ -1,6 +1,7 @@
 version: "3.3"
 
 services:
+# http://localhost/index.php/admin/authentication/sa/login
   app:
     image: acspri/limesurvey:5.2.11.1
     build:
@@ -8,19 +9,29 @@ services:
       dockerfile: Dockerfile
     build: ./app
     ports:
-      - 8082:80
+      - 80:8080
     environment:
+      LIMESURVEY_DB_HOST: ${LIMESURVEY_DB_HOST:-mysql}
+      LIMESURVEY_TABLE_PREFIX: ${LIMESURVEY_TABLE_PREFIX}
       LIMESURVEY_DB_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
       LIMESURVEY_ADMIN_USER: ${LIMESURVEY_ADMIN_USER:-admin}
       LIMESURVEY_ADMIN_PASSWORD: ${LIMESURVEY_ADMIN_PASSWORD:-password}
       LIMESURVEY_ADMIN_NAME: ${LIMESURVEY_ADMIN_NAME:-Lime Administrator}
       LIMESURVEY_ADMIN_EMAIL: ${LIMESURVEY_ADMIN_EMAIL:-lime@lime.lime}
+      LIMESURVEY_DEBUG: ${LIMESURVEY_DEBUG:-0} # 2
+      LIMESURVEY_SQL_DEBUG: ${LIMESURVEY_SQL_DEBUG:-0} #1, with 2 above
+      LIMESURVEY_USE_INNODB: ${LIMESURVEY_USE_INNODB:-Y}
     volumes:
-      - ./volumes/plugins:/var/www/html/plugins
-      - ./volumes/upload:/var/www/html/upload
-      - ./volumes/config:/var/www/html/application/config
+      - ./volumes/plugins:/var/www/html/plugins:cached
+      - ./volumes/upload:/var/www/html/upload:cached
+      - ./volumes/config:/var/www/html/application/config:cached
 
   mysql:
     image: mariadb:10.3
     environment:
       MYSQL_ROOT_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
+      LIMESURVEY_DB_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
+      LIMESURVEY_ADMIN_USER: ${LIMESURVEY_ADMIN_USER:-admin}
+      LIMESURVEY_ADMIN_PASSWORD: ${LIMESURVEY_ADMIN_PASSWORD:-password}
+    volumes:
+      - ./volumes/db/data:/var/lib/mysql:delegated
