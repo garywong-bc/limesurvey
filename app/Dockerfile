@@ -1,4 +1,8 @@
-FROM php:8.0-apache
+
+
+ARG DOCKER_REGISTRY=docker.io/library
+FROM $DOCKER_REGISTRY/php:8.0-apache
+# Derived from https://github.com/adamzammit/limesurvey-docker
 
 # As per https://account.limesurvey.org/stable-release
 ENV DOWNLOAD_URL https://download.limesurvey.org/latest-stable-release/limesurvey5.2.12+220131.zip
@@ -6,8 +10,8 @@ ENV DOWNLOAD_SHA256 f615cd2f5d1eff32e6fd5269861fc002244896d2939a38edef030471f3e9
 
 # install the PHP extensions we need
 RUN apt-get update && apt-get install -y unzip libc-client-dev libfreetype6-dev libmcrypt-dev libpng-dev libjpeg-dev libldap-common libldap2-dev zlib1g-dev libkrb5-dev libtidy-dev libzip-dev libsodium-dev && rm -rf /var/lib/apt/lists/* \
-	&& docker-php-ext-configure gd --with-freetype=/usr/include/  --with-jpeg=/usr \
-	&& docker-php-ext-install gd mysqli pdo pdo_mysql opcache zip iconv tidy \
+    && docker-php-ext-configure gd --with-freetype=/usr/include/  --with-jpeg=/usr \
+    && docker-php-ext-install gd mysqli pdo pdo_mysql opcache zip iconv tidy \
     && docker-php-ext-configure ldap --with-libdir=lib/$(gcc -dumpmachine)/ \
     && docker-php-ext-install ldap \
     && docker-php-ext-configure imap --with-imap-ssl --with-kerberos \
@@ -22,13 +26,13 @@ RUN a2enmod rewrite
 # set recommended PHP.ini settings
 # see https://secure.php.net/manual/en/opcache.installation.php
 RUN { \
-		echo 'opcache.memory_consumption=128'; \
-		echo 'opcache.interned_strings_buffer=8'; \
-		echo 'opcache.max_accelerated_files=4000'; \
-		echo 'opcache.revalidate_freq=2'; \
-		echo 'opcache.fast_shutdown=1'; \
-		echo 'opcache.enable_cli=1'; \
-	} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+    echo 'opcache.memory_consumption=128'; \
+    echo 'opcache.interned_strings_buffer=8'; \
+    echo 'opcache.max_accelerated_files=4000'; \
+    echo 'opcache.revalidate_freq=2'; \
+    echo 'opcache.fast_shutdown=1'; \
+    echo 'opcache.enable_cli=1'; \
+    } > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 RUN useradd --comment "Apache User, integrated with non-root default user" \
     -g root -m -u 1001 default_user  
@@ -51,13 +55,13 @@ RUN set -x; \
 
 #Set PHP defaults for Limesurvey (allow bigger uploads)
 RUN { \
-		echo 'memory_limit=256M'; \
-		echo 'upload_max_filesize=128M'; \
-		echo 'post_max_size=128M'; \
-		echo 'max_execution_time=120'; \
-        echo 'max_input_vars=10000'; \
-        echo 'date.timezone=UTC'; \
-	} > /usr/local/etc/php/conf.d/uploads.ini
+    echo 'memory_limit=256M'; \
+    echo 'upload_max_filesize=128M'; \
+    echo 'post_max_size=128M'; \
+    echo 'max_execution_time=120'; \
+    echo 'max_input_vars=10000'; \
+    echo 'date.timezone=UTC'; \
+    } > /usr/local/etc/php/conf.d/uploads.ini
 
 # Set Apache defaults for Limesurvey (ServerName and default port > 1024), and
 # also enable "/server-status?auto" for integration with Sysdig

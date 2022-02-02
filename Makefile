@@ -11,10 +11,10 @@ clean:
 	docker compose down -v 
 
 build:
-	docker compose build 
+	docker compose build --build-arg DOCKER_REGISTRY=docker.io/library
 
 build-nocache:
-	docker compose build --no-cache
+	docker compose build --build-arg DOCKER_REGISTRY=docker.io/library --no-cache
 
 # http://localhost/index.php/admin/authentication/sa/login
 run: 
