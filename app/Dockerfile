@@ -45,7 +45,7 @@ RUN set -x; \
     mv /tmp/lime*/.[a-zA-Z]* /var/www/html/; \
     rm /tmp/lime.zip; \
     rmdir /tmp/lime*; \
-    chmod g+s /var/www/html; \
+    chmod g+w,g+s /var/www/html; \
     chown -R default_user:root /var/www/html; \
     mkdir -p /var/lime/application/config; \
     mkdir -p /var/lime/upload; \
