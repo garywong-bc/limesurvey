@@ -46,7 +46,8 @@ RUN set -x; \
     rm /tmp/lime.zip; \
     rmdir /tmp/lime*; \
     chmod g+s /var/www/html; \
-    mkdir -p /var/www/html/tmp/runtime; \
+    mkdir -p      /var/www/html/tmp/runtime; \
+    chmod g+w,a+w /var/www/html/tmp/runtime; \
     chown -R default_user:root /var/www/html; \
     mkdir -p /var/lime/application/config; \
     mkdir -p /var/lime/upload; \
