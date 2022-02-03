@@ -212,11 +212,6 @@ objects:
                     secretKeyRef:
                       name: "${SURVEY_NAME}limesurvey-mysql"
                       key: database-name
-                # - name: MYSQL_DATABASE
-                #   valueFrom:
-                #     secretKeyRef:
-                #       name: "${SURVEY_NAME}limesurvey-mysql"
-                #       key: database-name
                 - name: LIMESURVEY_DB_HOST
                   value: "${SURVEY_NAME}limesurvey-mysql"
                 - name: LIMESURVEY_ADMIN_USER
@@ -255,7 +250,7 @@ objects:
                   mountPath: "/var/www/html/plugins"
               livenessProbe:
                 httpGet:
-                  path: "/"
+                  path: "/server-status"
                   port: 8080
                   scheme: HTTP
                 initialDelaySeconds: 60
@@ -265,7 +260,7 @@ objects:
                 failureThreshold: 3
               readinessProbe:
                 httpGet:
-                  path: "/"
+                  path: "/server-status"
                   port: 8080
                   scheme: HTTP
                 initialDelaySeconds: 30
