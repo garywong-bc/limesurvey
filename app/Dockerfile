@@ -45,10 +45,9 @@ RUN set -x; \
     mv /tmp/lime*/.[a-zA-Z]* /var/www/html/; \
     rm /tmp/lime.zip; \
     rmdir /tmp/lime*; \
-    chmod g+s /var/www/html; \
+    chmod -R g+srw /var/www/html; \
     # mkdir -p /var/www/html/tmp/runtime; \
-    chmod -R g+rw /var/www/html/tmp; \
-    chmod -R g+rw /var/www/html/assets; \
+    # chmod -R g+rw /var/www/html/assets; \
     chown -R default_user:root /var/www/html; \
     mkdir -p /var/lime/application/config; \
     mkdir -p /var/lime/upload; \
@@ -69,8 +68,9 @@ RUN { \
 
 # Set Apache defaults for Limesurvey (ServerName and default port > 1024), and
 # also enable "/server-status?auto" for integration with Sysdig
-RUN sed -i '$ a ServerName localhost'     /etc/apache2/apache2.conf   \
-    && sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf    \
+#RUN sed -i '$ a ServerName localhost'     /etc/apache2/apache2.conf   \
+
+RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf    \
     && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-enabled/000-default.conf \
     && sed -i '/RewriteCond %{REQUEST_FILENAME} !-d$/a \    RewriteCond %{REQUEST_URI} !=/server-status' /var/www/html/.htaccess
 
