@@ -27,7 +27,7 @@ parameters:
     value: 1Gi
   - description: The account name for the default LimeSurvey Administrator.
     displayName: Administrator Account Name
-    name: ADMIN_USER
+    name: LIMESURVEY_ADMIN_USER
     value: admin
   - description: The descriptive name for the default LimeSurvey Administrator.
     displayName: Administrator Display Name
@@ -50,11 +50,11 @@ parameters:
   - description: Debug level (0, 1, 2)
     displayName: Application Debug
     name: LIMESURVEY_DEBUG
-    value: "0"
+    value: "2"
   - description: SQL Debug Toggle (works with Application Debug = 2)
     displayName: SQL Debug Toggle
     name: LIMESURVEY_SQL_DEBUG
-    value: "0"
+    value: "1"
   - description: InnoDB Toggle
     displayName: InnoDB Toggle
     name: LIMESURVEY_USE_INNODB
@@ -85,7 +85,7 @@ objects:
         template.openshift.io/expose-admin_password: "{.data['admin-password']}"
         template.openshift.io/expose-admin_email: "{.data['admin-email']}"
     stringData:
-      admin-user: "${ADMIN_USER}"
+      admin-user: "${LIMESURVEY_ADMIN_USER}"
       admin-name: "${LIMESURVEY_ADMIN_NAME}"
       admin-password: "${LIMESURVEY_ADMIN_PASSWORD}"
       admin-email: "${LIMESURVEY_ADMIN_EMAIL}"
@@ -197,7 +197,7 @@ objects:
                     secretKeyRef:
                       name: "${SURVEY_NAME}limesurvey-mysql"
                       key: database-root-password
-                - name: LIMESURVEY_ADMIN_USER
+                - name: LIMESURVEY_DB_USER
                   valueFrom:
                     secretKeyRef:
                       name: "${SURVEY_NAME}limesurvey-mysql"
@@ -207,14 +207,19 @@ objects:
                     secretKeyRef:
                       name: "${SURVEY_NAME}limesurvey-mysql"
                       key: database-password
-                - name: MYSQL_DB_NAME
+                - name: LIMESURVEY_DB_NAME
                   valueFrom:
                     secretKeyRef:
                       name: "${SURVEY_NAME}limesurvey-mysql"
                       key: database-name
+                # - name: MYSQL_DATABASE
+                #   valueFrom:
+                #     secretKeyRef:
+                #       name: "${SURVEY_NAME}limesurvey-mysql"
+                #       key: database-name
                 - name: LIMESURVEY_DB_HOST
                   value: "${SURVEY_NAME}limesurvey-mysql"
-                - name: ADMIN_USER
+                - name: LIMESURVEY_ADMIN_USER
                   valueFrom:
                     secretKeyRef:
                       name: "${SURVEY_NAME}limesurvey-app"
@@ -245,7 +250,7 @@ objects:
                 - name: "${SURVEY_NAME}limesurvey-app-upload"
                   mountPath: "/var/www/html/upload"
                 - name: "${SURVEY_NAME}limesurvey-app-config"
-                  mountPath: "/var/www/html/config"
+                  mountPath: "/var/www/html/application/config"
                 - name: "${SURVEY_NAME}limesurvey-app-plugins"
                   mountPath: "/var/www/html/plugins"
               livenessProbe:
