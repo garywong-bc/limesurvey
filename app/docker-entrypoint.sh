@@ -120,11 +120,10 @@ EOPHP
 		DBENGINE='InnoDB'
     fi
 
-    # Note needed as done in Dockerfile
-    # chown www-data:www-data -R tmp 
-    # chown www-data:www-data -R plugins
-    # chown www-data:www-data -R upload 
-    # chown www-data:www-data -R application/config
+    # chown default_user:root -R tmp 
+    # chown default_user:root -R plugins
+    # chown default_user:root -R upload 
+    # chown default_user:root -R application/config
 
     mkdir -p upload/surveys
 
