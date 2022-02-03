@@ -72,6 +72,8 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
 awk '/lime_/ && c == 0 { c = 1; system("cat") } { print }' application/config/config-sample-mysql.php > application/config/config.php <<'EOPHP'
 'attributes' => array(),
 EOPHP
+        # Writable runtime path (https://manual.limesurvey.org/Optional_settings#Runtime_path)
+        sed -i "/\/\/ Use the following config variable to set modified.*/i\ 'runtimePath'=>'/var/www/html/tmp/runtime'," application/config/config.php
     fi
 
 	# Install BaltimoreCyberTrustRoot.crt.pem
@@ -120,7 +122,7 @@ EOPHP
 		DBENGINE='InnoDB'
     fi
 
-    # Note needed as done in Dockerfile
+    # Not needed as done in Dockerfile
     # chown www-data:www-data -R tmp 
     # chown www-data:www-data -R plugins
     # chown www-data:www-data -R upload 
