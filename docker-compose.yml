@@ -20,6 +20,8 @@ services:
       LIMESURVEY_DEBUG: ${LIMESURVEY_DEBUG:-0} # 2
       LIMESURVEY_SQL_DEBUG: ${LIMESURVEY_SQL_DEBUG:-0} #1, with 2 above
       LIMESURVEY_USE_INNODB: ${LIMESURVEY_USE_INNODB:-Y}
+      APACHE_RUN_USER: ${APACHE_RUN_USER:-default_user}
+      APACHE_RUN_GROUP: ${APACHE_RUN_GROUP:-root}
     volumes:
       - ./volumes/plugins:/var/www/html/plugins:cached
       - ./volumes/upload:/var/www/html/upload:cached

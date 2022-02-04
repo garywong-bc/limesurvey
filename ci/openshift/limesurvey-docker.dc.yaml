@@ -59,6 +59,14 @@ parameters:
     displayName: InnoDB Toggle
     name: LIMESURVEY_USE_INNODB
     value: "Y"
+  - description: Apache2 Run User (non-root)
+    displayName: Apache2 Run User
+    name: APACHE_RUN_USER
+    value: default_user
+  - description: Apache2 Run Group (non-root)
+    displayName: Apache2 Run Group
+    name: APACHE_RUN_GROUP
+    value: root
   - name: CPU_LIMIT
     value: 200m
   - name: MEMORY_LIMIT

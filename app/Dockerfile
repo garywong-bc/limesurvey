@@ -9,7 +9,10 @@ ENV DOWNLOAD_URL https://download.limesurvey.org/latest-stable-release/limesurve
 ENV DOWNLOAD_SHA256 f615cd2f5d1eff32e6fd5269861fc002244896d2939a38edef030471f3e91038
 
 # install the PHP extensions we need
-RUN apt-get update && apt-get install -y unzip libc-client-dev libfreetype6-dev libmcrypt-dev libpng-dev libjpeg-dev libldap-common libldap2-dev zlib1g-dev libkrb5-dev libtidy-dev libzip-dev libsodium-dev && rm -rf /var/lib/apt/lists/* \
+RUN apt-get update && apt-get install -y unzip libc-client-dev libfreetype6-dev libmcrypt-dev libpng-dev \
+    libjpeg-dev libldap-common libldap2-dev zlib1g-dev libkrb5-dev libtidy-dev libzip-dev libsodium-dev \
+    lynx vim curl wget net-tools iproute2  \
+    && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-configure gd --with-freetype=/usr/include/  --with-jpeg=/usr \
     && docker-php-ext-install gd mysqli pdo pdo_mysql opcache zip iconv tidy \
     && docker-php-ext-configure ldap --with-libdir=lib/$(gcc -dumpmachine)/ \
@@ -46,8 +49,6 @@ RUN set -x; \
     rm /tmp/lime.zip; \
     rmdir /tmp/lime*; \
     chmod -R g+srw /var/www/html; \
-    # mkdir -p /var/www/html/tmp/runtime; \
-    # chmod -R g+rw /var/www/html/assets; \
     chown -R default_user:root /var/www/html; \
     mkdir -p /var/lime/application/config; \
     mkdir -p /var/lime/upload; \
@@ -66,13 +67,16 @@ RUN { \
     echo 'date.timezone=UTC'; \
     } > /usr/local/etc/php/conf.d/uploads.ini
 
-# Set Apache defaults for Limesurvey (ServerName and default port > 1024), and
+# Set 12 Factors Apache defaults for Limesurvey (default port > 1024), and
 # also enable "/server-status?auto" for integration with Sysdig
-#RUN sed -i '$ a ServerName localhost'     /etc/apache2/apache2.conf   \
+
 
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf    \
+    && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-available/000-default.conf \
     && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-enabled/000-default.conf \
-    && sed -i '/RewriteCond %{REQUEST_FILENAME} !-d$/a \    RewriteCond %{REQUEST_URI} !=/server-status' /var/www/html/.htaccess
+    && sed -i '/RewriteCond %{REQUEST_FILENAME} !-d$/a \    RewriteCond %{REQUEST_URI} !=/server-status' /var/www/html/.htaccess \
+    && sed -i 's/#export APACHE_LYNX/export APACHE_LYNX/g' /etc/apache2/envvars
+# && echo "export APACHE_LYNX=/usr/bin/lynx" >> /etc/apache2/envvars
 
 VOLUME ["/var/www/html/plugins"]
 VOLUME ["/var/www/html/upload"]
