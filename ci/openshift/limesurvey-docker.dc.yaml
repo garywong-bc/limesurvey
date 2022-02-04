@@ -242,6 +242,18 @@ objects:
                     secretKeyRef:
                       name: "${SURVEY_NAME}limesurvey-app"
                       key: admin-email
+                - name: LIMESURVEY_TABLE_PREFIX
+                  value: "${LIMESURVEY_TABLE_PREFIX}"
+                - name: LIMESURVEY_DEBUG
+                  value: "${LIMESURVEY_DEBUG}"
+                - name: LIMESURVEY_SQL_DEBUG
+                  value: "${LIMESURVEY_SQL_DEBUG}"
+                - name: LIMESURVEY_USE_INNODB
+                  value: "${LIMESURVEY_USE_INNODB}"
+                - name: APACHE_RUN_USER
+                  value: "${APACHE_RUN_USER}"
+                - name: APACHE_RUN_GROUP
+                  value: "${APACHE_RUN_GROUP}"
               resources:
                 limits:
                   cpu: "${CPU_LIMIT}"

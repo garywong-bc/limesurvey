@@ -23,9 +23,9 @@ services:
       APACHE_RUN_USER: ${APACHE_RUN_USER:-default_user}
       APACHE_RUN_GROUP: ${APACHE_RUN_GROUP:-root}
     volumes:
-      - ./volumes/plugins:/var/www/html/plugins:cached
-      - ./volumes/upload:/var/www/html/upload:cached
-      - ./volumes/config:/var/www/html/application/config:cached
+      - ./volumes/plugins:/var/www/html/plugins
+      - ./volumes/upload:/var/www/html/upload
+      - ./volumes/config:/var/www/html/application/config
 
   mysql:
     image: mariadb:10.3
@@ -35,4 +35,4 @@ services:
       LIMESURVEY_ADMIN_USER: ${LIMESURVEY_ADMIN_USER:-admin}
       LIMESURVEY_ADMIN_PASSWORD: ${LIMESURVEY_ADMIN_PASSWORD:-password}
     volumes:
-      - ./volumes/db/data:/var/lib/mysql:delegated
+      - ./volumes/db/data:/var/lib/mysql
