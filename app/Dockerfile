@@ -1,12 +1,10 @@
-
-
 ARG DOCKER_REGISTRY=docker.io/library
 FROM $DOCKER_REGISTRY/php:8.0-apache
 # Derived from https://github.com/adamzammit/limesurvey-docker
 
 # As per https://account.limesurvey.org/stable-release
-ENV DOWNLOAD_URL https://download.limesurvey.org/latest-stable-release/limesurvey5.2.12+220131.zip
-ENV DOWNLOAD_SHA256 f615cd2f5d1eff32e6fd5269861fc002244896d2939a38edef030471f3e91038
+ENV DOWNLOAD_URL https://download.limesurvey.org/latest-stable-release/limesurvey5.2.13+220207.zip
+ENV DOWNLOAD_SHA256 b27538d07d2e81fa20dc9cb7d94cc89b35dc63f49aeb5394a3a9e69d8e4784e8
 
 # install the PHP extensions we need
 RUN apt-get update && apt-get install -y unzip libc-client-dev libfreetype6-dev libmcrypt-dev libpng-dev \
@@ -69,10 +67,12 @@ RUN { \
 
 # Set 12 Factors Apache defaults for Limesurvey (default port > 1024), and
 # also enable "/server-status?auto" for integration with Sysdig
+COPY apache-directory.txt /tmp
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf    \
     && sed -i 's/Listen 443/Listen 8443/g' /etc/apache2/ports.conf    \
-    && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-available/000-default.conf \
+    # && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-available/000-default.conf \
     && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-enabled/000-default.conf \
+    && sed -i '/DocumentRoot.*/ r /tmp/apache-directory.txt' /etc/apache2/sites-enabled/000-default.conf \
     && sed -i '/RewriteCond %{REQUEST_FILENAME} !-d$/a \    RewriteCond %{REQUEST_URI} !=/server-status' /var/www/html/.htaccess \
     && sed -i 's/#export APACHE_LYNX/export APACHE_LYNX/g' /etc/apache2/envvars
 
@@ -84,7 +84,7 @@ VOLUME ["/var/www/html/application/config"]
 
 
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
+# RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
 
 # ENTRYPOINT resets CMD
 ENTRYPOINT ["docker-entrypoint.sh"]

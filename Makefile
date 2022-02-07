@@ -7,8 +7,7 @@ TS=$(shell date +%Y%m%d%H%M%S)
 develop: clean build run
 
 clean:
-	docker compose rm -vf
-	docker compose down -v 
+	docker compose down -v  --remove-orphans
 
 build:
 	docker compose build --build-arg DOCKER_REGISTRY=docker.io/library
@@ -22,10 +21,11 @@ run:
 	docker compose logs -f
 
 reset: clean
-	rm -rf volumes/db/data/*
-	rm -rf volumes/config/*
-	rm -rf volumes/plugins/*
-	rm -rf volumes/upload/*
+	docker volume prune
+# rm -rf volumes/db/data/*
+# rm -rf volumes/config/*
+# rm -rf volumes/plugins/*
+# rm -rf volumes/upload/*
 
 db-shell:
 	docker compose exec mysql /bin/bash

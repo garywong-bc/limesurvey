@@ -23,16 +23,22 @@ services:
       APACHE_RUN_USER: ${APACHE_RUN_USER:-default_user}
       APACHE_RUN_GROUP: ${APACHE_RUN_GROUP:-root}
     volumes:
-      - ./volumes/plugins:/var/www/html/plugins
-      - ./volumes/upload:/var/www/html/upload
-      - ./volumes/config:/var/www/html/application/config
+      - app_plugins:/var/www/html/plugins:delegated
+      - app_upload:/var/www/html/upload:delegated
+      - app_config:/var/www/html/application/config:delegated
 
   mysql:
-    image: mariadb:10.3
+    image: mariadb:10
     environment:
       MYSQL_ROOT_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
       LIMESURVEY_DB_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
       LIMESURVEY_ADMIN_USER: ${LIMESURVEY_ADMIN_USER:-admin}
       LIMESURVEY_ADMIN_PASSWORD: ${LIMESURVEY_ADMIN_PASSWORD:-password}
     volumes:
-      - ./volumes/db/data:/var/lib/mysql
+      - db_data:/var/lib/mysql:delegated
+
+volumes:
+  app_plugins:
+  app_upload:
+  app_config:
+  db_data:     
