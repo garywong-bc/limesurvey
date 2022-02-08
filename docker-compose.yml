@@ -1,7 +1,7 @@
 version: "3.3"
 
 services:
-# http://localhost/index.php/admin/authentication/sa/login
+# http://localhost/admin/authentication/sa/login
   app:
     image: acspri/limesurvey:5.2.11.1
     build:
@@ -20,6 +20,7 @@ services:
       LIMESURVEY_DEBUG: ${LIMESURVEY_DEBUG:-0} # 2
       LIMESURVEY_SQL_DEBUG: ${LIMESURVEY_SQL_DEBUG:-0} #1, with 2 above
       LIMESURVEY_USE_INNODB: ${LIMESURVEY_USE_INNODB:-Y}
+      LIMESURVEY_SHOW_SCRIPT_NAME:  ${LIMESURVEY_SHOW_SCRIPT_NAME:-false}
       APACHE_RUN_USER: ${APACHE_RUN_USER:-default_user}
       APACHE_RUN_GROUP: ${APACHE_RUN_GROUP:-root}
     volumes:

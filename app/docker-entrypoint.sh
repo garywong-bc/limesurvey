@@ -36,6 +36,17 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
     file_env 'LIMESURVEY_SQL_DEBUG' '0'
     file_env 'MYSQL_SSL_CA' ''
     file_env 'LIMESURVEY_USE_INNODB' ''
+	file_env 'LIMESURVEY_SHOW_SCRIPT_NAME' "${LIMESURVEY_SHOW_SCRIPT_NAME:-true}"
+    file_env 'LIMESURVEY_UPLOADDIR' "${LIMESURVEY_UPLOADDIR:-/var/www/html/upload}"
+    # 'updatable'          => false,
+    # 'ssl_disable_alert'  => true, // OCP has TLS termination at edge
+    # 'siteadminemail'     => $adminemail, // The default email address of the site administrator
+    # 'siteadminbounce'    => $adminemail, // The default email address used for error notification of sent messages for the site administrator (Return-Path)
+    # 'siteadminname'      => $adminname, // The name of the site administrator
+    # 'emailmethod'        => 'smtp', // The following values can be used:
+    # 'protocol'           => 'smtp',
+    # 'emailsmtphost'      => 'apps.smtp.gov.bc.ca', // Sets the SMTP host. You can also specify a different port than 25 by using
+    # 'emailsmtpssl'       => '', // Set this to 'ssl' or 'tls' to use SSL/TLS for SMTP connection
 
 	# if we're linked to MySQL and thus have credentials already, let's use them
 	file_env 'LIMESURVEY_DB_USER' "${MYSQL_ENV_MYSQL_USER:-root}"
@@ -107,6 +118,11 @@ EOPHP
 	set_config 'urlFormat' "'path'"
     set_config 'debug' "$LIMESURVEY_DEBUG"
     set_config 'debugsql' "$LIMESURVEY_SQL_DEBUG"
+    set_config 'showScriptName' "$LIMESURVEY_SHOW_SCRIPT_NAME"
+
+	if [ -n "$LIMESURVEY_UPLOADDIR" ]; then
+		sed -i "/debugsql.*/a \        'uploaddir' => \"$LIMESURVEY_UPLOADDIR\", " application/config/config.php
+    fi
 
 	if [ -n "$MYSQL_SSL_CA" ]; then
 		set_config 'attributes' "array(PDO::MYSQL_ATTR_SSL_CA => '\/var\/www\/html\/$MYSQL_SSL_CA', PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false)"

@@ -70,9 +70,7 @@ RUN { \
 # COPY apache-directory.txt /tmp
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf    \
     && sed -i 's/Listen 443/Listen 8443/g' /etc/apache2/ports.conf    \
-    # && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-available/000-default.conf \
     && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-enabled/000-default.conf \
-    # && sed -i '/DocumentRoot.*/ r /tmp/apache-directory.txt' /etc/apache2/sites-enabled/000-default.conf \
     && sed -i '/RewriteCond %{REQUEST_FILENAME} !-d$/a \    RewriteCond %{REQUEST_URI} !=/server-status' /var/www/html/.htaccess \
     && sed -i 's/#export APACHE_LYNX/export APACHE_LYNX/g' /etc/apache2/envvars
 

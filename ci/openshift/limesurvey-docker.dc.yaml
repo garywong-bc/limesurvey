@@ -15,7 +15,7 @@ parameters:
   - description: Version of LimeSurvey image to be used (e.g. v.3.16).
     displayName: Version of LimeSurvey
     name: IS_VERSION
-    value: 5.2.12
+    value: 5.2.13
   - description: The short-name of the Survey Service, lower-case with hyphen.
     displayName: LimeSurvey Acronym
     name: SURVEY_NAME
@@ -50,15 +50,19 @@ parameters:
   - description: Debug level (0, 1, 2)
     displayName: Application Debug
     name: LIMESURVEY_DEBUG
-    value: "2"
+    value: "0"
   - description: SQL Debug Toggle (works with Application Debug = 2)
     displayName: SQL Debug Toggle
     name: LIMESURVEY_SQL_DEBUG
-    value: "1"
+    value: "0"
   - description: InnoDB Toggle
     displayName: InnoDB Toggle
     name: LIMESURVEY_USE_INNODB
     value: "Y"
+  - description: Toggle to hhow index.php in URL
+    displayName: Show ScriptName Toggle
+    name: LIMESURVEY_SHOW_SCRIPT_NAME
+    value: false
   - description: Apache2 Run User (non-root)
     displayName: Apache2 Run User
     name: APACHE_RUN_USER
@@ -250,6 +254,8 @@ objects:
                   value: "${LIMESURVEY_SQL_DEBUG}"
                 - name: LIMESURVEY_USE_INNODB
                   value: "${LIMESURVEY_USE_INNODB}"
+                - name: LIMESURVEY_SHOW_SCRIPT_NAME
+                  value: "${LIMESURVEY_SHOW_SCRIPT_NAME}"
                 - name: APACHE_RUN_USER
                   value: "${APACHE_RUN_USER}"
                 - name: APACHE_RUN_GROUP
