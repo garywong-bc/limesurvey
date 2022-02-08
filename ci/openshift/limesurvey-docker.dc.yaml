@@ -270,7 +270,7 @@ objects:
                   mountPath: "/var/www/html/plugins"
               livenessProbe:
                 httpGet:
-                  path: "/server-status"
+                  path: "/"
                   port: 8080
                   scheme: HTTP
                 initialDelaySeconds: 60
@@ -280,7 +280,7 @@ objects:
                 failureThreshold: 3
               readinessProbe:
                 httpGet:
-                  path: "/server-status"
+                  path: "/"
                   port: 8080
                   scheme: HTTP
                 initialDelaySeconds: 30

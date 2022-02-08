@@ -67,12 +67,12 @@ RUN { \
 
 # Set 12 Factors Apache defaults for Limesurvey (default port > 1024), and
 # also enable "/server-status?auto" for integration with Sysdig
-COPY apache-directory.txt /tmp
+# COPY apache-directory.txt /tmp
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf    \
     && sed -i 's/Listen 443/Listen 8443/g' /etc/apache2/ports.conf    \
     # && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-available/000-default.conf \
     && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-enabled/000-default.conf \
-    && sed -i '/DocumentRoot.*/ r /tmp/apache-directory.txt' /etc/apache2/sites-enabled/000-default.conf \
+    # && sed -i '/DocumentRoot.*/ r /tmp/apache-directory.txt' /etc/apache2/sites-enabled/000-default.conf \
     && sed -i '/RewriteCond %{REQUEST_FILENAME} !-d$/a \    RewriteCond %{REQUEST_URI} !=/server-status' /var/www/html/.htaccess \
     && sed -i 's/#export APACHE_LYNX/export APACHE_LYNX/g' /etc/apache2/envvars
 
@@ -82,9 +82,7 @@ VOLUME ["/var/www/html/upload"]
 #ensure that the config is persisted especially for security.php
 VOLUME ["/var/www/html/application/config"]
 
-
 COPY docker-entrypoint.sh /usr/local/bin/
-# RUN ln -s usr/local/bin/docker-entrypoint.sh /entrypoint.sh # backwards compat
 
 # ENTRYPOINT resets CMD
 ENTRYPOINT ["docker-entrypoint.sh"]
