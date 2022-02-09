@@ -15,24 +15,19 @@ build:
 build-nocache:
 	docker compose build --build-arg DOCKER_REGISTRY=docker.io/library --no-cache
 
-# http://localhost/index.php/admin/authentication/sa/login
+# http://localhost/admin/authentication/sa/login
 run: 
 	docker compose up -d
 	docker compose logs -f
 
 reset: clean
 	docker volume prune
-# rm -rf volumes/db/data/*
-# rm -rf volumes/config/*
-# rm -rf volumes/plugins/*
-# rm -rf volumes/upload/*
 
 db-shell:
 	docker compose exec mysql /bin/bash
 
-# need mysql_native_password setting or plugin
-# db-term:
-# 	docker compose exec mysql /bin/bash -c 'mysql -u $${LIMESURVEY_ADMIN_USER} -p$${LIMESURVEY_ADMIN_PASSWORD} mysql'
+db-term:
+	docker compose exec mysql /bin/bash -c 'mysql -u $${MYSQL_USER} -p$${MYSQL_PASSWORD}'
 
 # To focus on LimeSurvey tables: \u limesurvey
 db-root-term:

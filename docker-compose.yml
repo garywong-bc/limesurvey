@@ -1,12 +1,31 @@
-version: "3.3"
+version: "3.9"
 
 services:
+  mysql:
+    image: mysql:8
+    container_name: limesurvey-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
+      MYSQL_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
+      MYSQL_USER: ${LIMESURVEY_ADMIN_USER:-admin}
+      MYSQL_INITDB_SKIP_TZINFO: true
+      command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - db_data:/var/lib/mysql:delegated
+      # mysqld is alive
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping","-p$${MYSQL_ROOT_PASSWORD}", "-h 127.0.0.1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
 # http://localhost/admin/authentication/sa/login
   app:
-    image: acspri/limesurvey:5.2.11.1
     build:
       context: ./app
       dockerfile: Dockerfile
+    container_name: limesurvey-app
     ports:
       - 80:8080
     environment:
@@ -21,22 +40,22 @@ services:
       LIMESURVEY_SQL_DEBUG: ${LIMESURVEY_SQL_DEBUG:-0} #1, with 2 above
       LIMESURVEY_USE_INNODB: ${LIMESURVEY_USE_INNODB:-Y}
       LIMESURVEY_SHOW_SCRIPT_NAME:  ${LIMESURVEY_SHOW_SCRIPT_NAME:-false}
+      LIMESURVEY_SSL_DISABLE:  ${LIMESURVEY_SSL_DISABLE:-true}
       APACHE_RUN_USER: ${APACHE_RUN_USER:-default_user}
       APACHE_RUN_GROUP: ${APACHE_RUN_GROUP:-root}
     volumes:
       - app_plugins:/var/www/html/plugins:delegated
       - app_upload:/var/www/html/upload:delegated
       - app_config:/var/www/html/application/config:delegated
-
-  mysql:
-    image: mariadb:10
-    environment:
-      MYSQL_ROOT_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
-      LIMESURVEY_DB_PASSWORD: ${LIMESURVEY_DB_PASSWORD:-e/xa|m|ple}
-      LIMESURVEY_ADMIN_USER: ${LIMESURVEY_ADMIN_USER:-admin}
-      LIMESURVEY_ADMIN_PASSWORD: ${LIMESURVEY_ADMIN_PASSWORD:-password}
-    volumes:
-      - db_data:/var/lib/mysql:delegated
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://app:8080"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+        mysql:
+          condition: service_started
 
 volumes:
   app_plugins:

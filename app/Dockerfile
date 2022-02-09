@@ -1,15 +1,19 @@
 ARG DOCKER_REGISTRY=docker.io/library
 FROM $DOCKER_REGISTRY/php:8.0-apache
 # Derived from https://github.com/adamzammit/limesurvey-docker
+# and DockerHub acspri/limesurvey:5.2.11.1
 
 # As per https://account.limesurvey.org/stable-release
 ENV DOWNLOAD_URL https://download.limesurvey.org/latest-stable-release/limesurvey5.2.13+220207.zip
 ENV DOWNLOAD_SHA256 b27538d07d2e81fa20dc9cb7d94cc89b35dc63f49aeb5394a3a9e69d8e4784e8
 
+ARG GITHUB_REPO=https://github.com/LimeSurvey/LimeSurvey
+ARG GITHUB_TAG=5.1.18+211101
+# NOTE: Need to update the same ARGs in ../ci/openshift/limesurvey.bc.yaml
+
 # install the PHP extensions we need
 RUN apt-get update && apt-get install -y unzip libc-client-dev libfreetype6-dev libmcrypt-dev libpng-dev \
     libjpeg-dev libldap-common libldap2-dev zlib1g-dev libkrb5-dev libtidy-dev libzip-dev libsodium-dev \
-    lynx vim curl wget net-tools iproute2  \
     && rm -rf /var/lib/apt/lists/* \
     && docker-php-ext-configure gd --with-freetype=/usr/include/  --with-jpeg=/usr \
     && docker-php-ext-install gd mysqli pdo pdo_mysql opcache zip iconv tidy \
@@ -39,21 +43,17 @@ RUN useradd --comment "Apache User, integrated with non-root default user" \
     -g root -m -u 1001 default_user  
 
 RUN set -x; \
-    curl -SL "$DOWNLOAD_URL" -o /tmp/lime.zip; \
-    echo "$DOWNLOAD_SHA256 /tmp/lime.zip" | sha256sum -c - || exit 1; \
-    unzip /tmp/lime.zip -d /tmp; \
-    mv /tmp/lime*/* /var/www/html/; \
-    mv /tmp/lime*/.[a-zA-Z]* /var/www/html/; \
-    rm /tmp/lime.zip; \
-    rmdir /tmp/lime*; \
-    chmod -R g+srw /var/www/html; \
-    chown -R default_user:root /var/www/html; \
-    mkdir -p /var/lime/application/config; \
-    mkdir -p /var/lime/upload; \
-    mkdir -p /var/lime/plugins; \
-    cp -dpR /var/www/html/application/config/* /var/lime/application/config; \
-    cp -dpR /var/www/html/upload/* /var/lime/upload; \
-    cp -dpR /var/www/html/plugins/* /var/lime/plugins
+    wget "$GITHUB_REPO/archive/refs/tags/$GITHUB_TAG.tar.gz" \
+    && tar -zxf $GITHUB_TAG.tar.gz --strip-components=1 \
+    && rm $GITHUB_TAG.tar.gz \
+    && mkdir -p /var/lime/application/config \
+    && mkdir -p /var/lime/upload \
+    && mkdir -p /var/lime/plugins \
+    && chown -R default_user:root /var/www/html \
+    && chmod -R g+w /var/www/html \
+    && cp -dpR /var/www/html/application/config/* /var/lime/application/config \
+    && cp -dpR /var/www/html/upload/* /var/lime/upload \
+    && cp -dpR /var/www/html/plugins/* /var/lime/plugins
 
 #Set PHP defaults for Limesurvey (allow bigger uploads)
 RUN { \
@@ -67,17 +67,15 @@ RUN { \
 
 # Set 12 Factors Apache defaults for Limesurvey (default port > 1024), and
 # also enable "/server-status?auto" for integration with Sysdig
-# COPY apache-directory.txt /tmp
 RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf    \
     && sed -i 's/Listen 443/Listen 8443/g' /etc/apache2/ports.conf    \
     && sed -i 's/<VirtualHost \*\:80>/<VirtualHost *:8080>/g' /etc/apache2/sites-enabled/000-default.conf \
-    && sed -i '/RewriteCond %{REQUEST_FILENAME} !-d$/a \    RewriteCond %{REQUEST_URI} !=/server-status' /var/www/html/.htaccess \
-    && sed -i 's/#export APACHE_LYNX/export APACHE_LYNX/g' /etc/apache2/envvars
+    && sed -i '/RewriteCond %{REQUEST_FILENAME} !-d$/a \    RewriteCond %{REQUEST_URI} !=/server-status' /var/www/html/.htaccess
 
 VOLUME ["/var/www/html/plugins"]
 VOLUME ["/var/www/html/upload"]
 
-#ensure that the config is persisted especially for security.php
+# Ensure that the config is persisted especially for security.php
 VOLUME ["/var/www/html/application/config"]
 
 COPY docker-entrypoint.sh /usr/local/bin/

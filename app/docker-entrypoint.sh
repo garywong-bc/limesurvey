@@ -37,9 +37,10 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
     file_env 'MYSQL_SSL_CA' ''
     file_env 'LIMESURVEY_USE_INNODB' ''
 	file_env 'LIMESURVEY_SHOW_SCRIPT_NAME' "${LIMESURVEY_SHOW_SCRIPT_NAME:-true}"
-    file_env 'LIMESURVEY_UPLOADDIR' "${LIMESURVEY_UPLOADDIR:-/var/www/html/upload}"
+    file_env 'LIMESURVEY_SSL_DISABLE' "${LIMESURVEY_SSL_DISABLE:-false}"
+
+
     # 'updatable'          => false,
-    # 'ssl_disable_alert'  => true, // OCP has TLS termination at edge
     # 'siteadminemail'     => $adminemail, // The default email address of the site administrator
     # 'siteadminbounce'    => $adminemail, // The default email address used for error notification of sent messages for the site administrator (Return-Path)
     # 'siteadminname'      => $adminname, // The name of the site administrator
@@ -119,10 +120,15 @@ EOPHP
     set_config 'debug' "$LIMESURVEY_DEBUG"
     set_config 'debugsql' "$LIMESURVEY_SQL_DEBUG"
     set_config 'showScriptName' "$LIMESURVEY_SHOW_SCRIPT_NAME"
+    set_config 'showScriptName' "$LIMESURVEY_SHOW_SCRIPT_NAME"
+    set_config 'ssl_disable_alert' "${LIMESURVEY_SSL_DISABLE:-false}"
 
-	if [ -n "$LIMESURVEY_UPLOADDIR" ]; then
-		sed -i "/debugsql.*/a \        'uploaddir' => \"$LIMESURVEY_UPLOADDIR\", " application/config/config.php
-    fi
+
+    # 'updatable'          => false,
+
+	# if [ -n "$LIMESURVEY_UPLOADDIR" ]; then
+	# 	sed -i "/debugsql.*/a \        'uploaddir' => \"$LIMESURVEY_UPLOADDIR\", " application/config/config.php
+    # fi
 
 	if [ -n "$MYSQL_SSL_CA" ]; then
 		set_config 'attributes' "array(PDO::MYSQL_ATTR_SSL_CA => '\/var\/www\/html\/$MYSQL_SSL_CA', PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false)"
@@ -141,8 +147,6 @@ EOPHP
     # chown www-data:www-data -R plugins
     # chown www-data:www-data -R upload 
     # chown www-data:www-data -R application/config
-
-    mkdir -p upload/surveys
 
 	DBSTATUS=$(TERM=dumb php -- "$LIMESURVEY_DB_HOST" "$LIMESURVEY_DB_USER" "$LIMESURVEY_DB_PASSWORD" "$LIMESURVEY_DB_NAME" "$LIMESURVEY_TABLE_PREFIX" "$MYSQL_SSL_CA" <<'EOPHP'
 <?php
