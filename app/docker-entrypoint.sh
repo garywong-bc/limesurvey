@@ -38,16 +38,14 @@ if [[ "$1" == apache2* ]] || [ "$1" == php-fpm ]; then
     file_env 'LIMESURVEY_USE_INNODB' ''
 	file_env 'LIMESURVEY_SHOW_SCRIPT_NAME' "${LIMESURVEY_SHOW_SCRIPT_NAME:-true}"
     file_env 'LIMESURVEY_SSL_DISABLE' "${LIMESURVEY_SSL_DISABLE:-false}"
-
-
+    file_env 'LIMESURVEY_SITEADMIN_EMAIL' "${LIMESURVEY_SITEADMIN_EMAIL}"
+    file_env 'LIMESURVEY_SITEADMIN_BOUNCE' "${LIMESURVEY_SITEADMIN_BOUNCE}"
+    file_env 'LIMESURVEY_SITEADMIN_NAME' "${LIMESURVEY_SITEADMIN_NAME}"
+    file_env 'LIMESURVEY_EMAIL_METHOD' "${LIMESURVEY_EMAIL_METHOD}"
+    file_env 'LIMESURVEY_EMAIL_PROTOCOL' "${LIMESURVEY_EMAIL_PROTOCOL}"
+    file_env 'LIMESURVEY_EMAIL_SMTP_HOST' "${LIMESURVEY_EMAIL_SMTP_HOST}"
+    file_env 'LIMESURVEY_EMAIL_SMTP_SSL' "${LIMESURVEY_EMAIL_SMTP_SSL}"
     # 'updatable'          => false,
-    # 'siteadminemail'     => $adminemail, // The default email address of the site administrator
-    # 'siteadminbounce'    => $adminemail, // The default email address used for error notification of sent messages for the site administrator (Return-Path)
-    # 'siteadminname'      => $adminname, // The name of the site administrator
-    # 'emailmethod'        => 'smtp', // The following values can be used:
-    # 'protocol'           => 'smtp',
-    # 'emailsmtphost'      => 'apps.smtp.gov.bc.ca', // Sets the SMTP host. You can also specify a different port than 25 by using
-    # 'emailsmtpssl'       => '', // Set this to 'ssl' or 'tls' to use SSL/TLS for SMTP connection
 
 	# if we're linked to MySQL and thus have credentials already, let's use them
 	file_env 'LIMESURVEY_DB_USER' "${MYSQL_ENV_MYSQL_USER:-root}"
@@ -120,15 +118,31 @@ EOPHP
     set_config 'debug' "$LIMESURVEY_DEBUG"
     set_config 'debugsql' "$LIMESURVEY_SQL_DEBUG"
     set_config 'showScriptName' "$LIMESURVEY_SHOW_SCRIPT_NAME"
-    set_config 'showScriptName' "$LIMESURVEY_SHOW_SCRIPT_NAME"
-    set_config 'ssl_disable_alert' "${LIMESURVEY_SSL_DISABLE:-false}"
 
+	if [ -n "$LIMESURVEY_SSL_DISABLE" ]; then
+		sed -i "/debugsql.*/a \        'ssl_disable_alert' => $LIMESURVEY_SSL_DISABLE, " application/config/config.php
+	fi
+	if [ -n "$LIMESURVEY_SITEADMIN_EMAIL" ]; then
+		sed -i "/debugsql.*/a \        'siteadminemail' => \"$LIMESURVEY_SITEADMIN_EMAIL\", " application/config/config.php
+	fi
+	if [ -n "$LIMESURVEY_SITEADMIN_BOUNCE" ]; then
+		sed -i "/debugsql.*/a \        'siteadminbounce' => \"$LIMESURVEY_SITEADMIN_BOUNCE\", " application/config/config.php
+	fi
+	if [ -n "$LIMESURVEY_SITEADMIN_NAME" ]; then
+		sed -i "/debugsql.*/a \        'siteadminname' => \"$LIMESURVEY_SITEADMIN_NAME\", " application/config/config.php
+	fi
+	if [ -n "$LIMESURVEY_EMAIL_METHOD" ]; then
+		sed -i "/debugsql.*/a \        'emailmethod' => \"$LIMESURVEY_EMAIL_METHOD\", " application/config/config.php
+	fi
+	if [ -n "$LIMESURVEY_EMAIL_PROTOCOL" ]; then
+		sed -i "/debugsql.*/a \        'protocol' => \"$LIMESURVEY_EMAIL_PROTOCOL\", " application/config/config.php
+	fi
+	if [ -n "$LIMESURVEY_EMAIL_SMTP_HOST" ]; then
+		sed -i "/debugsql.*/a \        'emailsmtphost' => \"$LIMESURVEY_EMAIL_SMTP_HOST\", " application/config/config.php
+	fi    
 
-    # 'updatable'          => false,
-
-	# if [ -n "$LIMESURVEY_UPLOADDIR" ]; then
-	# 	sed -i "/debugsql.*/a \        'uploaddir' => \"$LIMESURVEY_UPLOADDIR\", " application/config/config.php
-    # fi
+    # ssl or tls or 'null'
+    sed -i "/debugsql.*/a \        'emailsmtpssl' => \"$LIMESURVEY_EMAIL_SMTP_SSL\", " application/config/config.php
 
 	if [ -n "$MYSQL_SSL_CA" ]; then
 		set_config 'attributes' "array(PDO::MYSQL_ATTR_SSL_CA => '\/var\/www\/html\/$MYSQL_SSL_CA', PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false)"

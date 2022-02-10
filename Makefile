@@ -21,7 +21,7 @@ run:
 	docker compose logs -f
 
 reset: clean
-	docker volume prune
+	docker volume prune -f
 
 db-shell:
 	docker compose exec mysql /bin/bash

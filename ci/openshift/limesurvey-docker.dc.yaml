@@ -62,11 +62,11 @@ parameters:
   - description: Toggle to how index.php in URL
     displayName: Show ScriptName Toggle
     name: LIMESURVEY_SHOW_SCRIPT_NAME
-    value: false
+    value: "false"
   - description: Disable non-SSL Warning
     displayName: Disable non-SSL Warning
     name: LIMESURVEY_SSL_DISABLE
-    value: true
+    value: "true"
   - description: Apache2 Run User (non-root)
     displayName: Apache2 Run User
     name: APACHE_RUN_USER

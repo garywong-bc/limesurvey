@@ -3,13 +3,9 @@ FROM $DOCKER_REGISTRY/php:8.0-apache
 # Derived from https://github.com/adamzammit/limesurvey-docker
 # and DockerHub acspri/limesurvey:5.2.11.1
 
-# As per https://account.limesurvey.org/stable-release
-ENV DOWNLOAD_URL https://download.limesurvey.org/latest-stable-release/limesurvey5.2.13+220207.zip
-ENV DOWNLOAD_SHA256 b27538d07d2e81fa20dc9cb7d94cc89b35dc63f49aeb5394a3a9e69d8e4784e8
-
 ARG GITHUB_REPO=https://github.com/LimeSurvey/LimeSurvey
 ARG GITHUB_TAG=5.1.18+211101
-# NOTE: Need to update the same ARGs in ../ci/openshift/limesurvey.bc.yaml
+# NOTE: Need to update istag to match this
 
 # install the PHP extensions we need
 RUN apt-get update && apt-get install -y unzip libc-client-dev libfreetype6-dev libmcrypt-dev libpng-dev \
