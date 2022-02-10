@@ -67,6 +67,34 @@ parameters:
     displayName: Disable non-SSL Warning
     name: LIMESURVEY_SSL_DISABLE
     value: "true"
+  - description: The email address for the LimeSurvey Site Administrator.
+    displayName: Site Administrator Email Address
+    name: LIMESURVEY_SITEADMIN_EMAIL
+    value:
+  - description: The return address for bounced emails.
+    displayName: Site Administrator Bounce Email Address
+    name: LIMESURVEY_SITEADMIN_BOUNCE
+    value:
+  - description: The descriptive name for the Site Administrator.
+    displayName: Site Administrator Display Name
+    name: LIMESURVEY_SITEADMIN_NAME
+    value:
+  - description: Email method
+    displayName: Email method
+    name: LIMESURVEY_EMAIL_METHOD
+    value: "smtp"
+  - description: Email protocol
+    displayName: Email protocol
+    name: LIMESURVEY_EMAIL_PROTOCOL
+    value: "smtp"
+  - description: Email SMTP Host
+    displayName: Email SMTP Host
+    name: LIMESURVEY_EMAIL_SMTP_HOST
+    value: "apps.smtp.gov.bc.ca"
+  - description: Email SMTP SSL security (tls, ssl, null)
+    displayName: Email SMTP SSL security
+    name: LIMESURVEY_EMAIL_SMTP_SSL
+    value:
   - description: Apache2 Run User (non-root)
     displayName: Apache2 Run User
     name: APACHE_RUN_USER
@@ -262,6 +290,18 @@ objects:
                   value: "${LIMESURVEY_SHOW_SCRIPT_NAME}"
                 - name: LIMESURVEY_SSL_DISABLE
                   value: "${LIMESURVEY_SSL_DISABLE}"
+                - name: LIMESURVEY_SITEADMIN_BOUNCE
+                  value: "${LIMESURVEY_SITEADMIN_BOUNCE}"
+                - name: LIMESURVEY_SITEADMIN_NAME
+                  value: "${LIMESURVEY_SITEADMIN_NAME}"
+                - name: LIMESURVEY_EMAIL_METHOD
+                  value: "${LIMESURVEY_EMAIL_METHOD}"
+                - name: LIMESURVEY_EMAIL_PROTOCOL
+                  value: "${LIMESURVEY_EMAIL_PROTOCOL}"
+                - name: LIMESURVEY_EMAIL_SMTP_HOST
+                  value: "${LIMESURVEY_EMAIL_SMTP_HOST}"
+                - name: LIMESURVEY_EMAIL_SMTP_SSL
+                  value: "${LIMESURVEY_EMAIL_SMTP_SSL}"
                 - name: APACHE_RUN_USER
                   value: "${APACHE_RUN_USER}"
                 - name: APACHE_RUN_GROUP
