@@ -290,6 +290,8 @@ objects:
                   value: "${LIMESURVEY_SHOW_SCRIPT_NAME}"
                 - name: LIMESURVEY_SSL_DISABLE
                   value: "${LIMESURVEY_SSL_DISABLE}"
+                - name: LIMESURVEY_SITEADMIN_EMAIL
+                  value: "${LIMESURVEY_SITEADMIN_EMAIL}"
                 - name: LIMESURVEY_SITEADMIN_BOUNCE
                   value: "${LIMESURVEY_SITEADMIN_BOUNCE}"
                 - name: LIMESURVEY_SITEADMIN_NAME
