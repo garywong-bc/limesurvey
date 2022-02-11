@@ -190,3 +190,6 @@ objects:
       sessionAffinity: None
     status:
       loadBalancer: {}
+message: |
+  To view the deployment log (assumes oc CLI is installed):
+  $  oc -n ${PROJECT} logs -f dc/${SURVEY}limesurvey-mysql

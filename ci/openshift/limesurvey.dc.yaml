@@ -11,8 +11,8 @@ parameters:
   - description: The OpenShift ImageStream name.
     displayName: Image Stream
     name: IS_NAME
-    value: limesurvey-docker
-  - description: Version of LimeSurvey image to be used (e.g. v.3.16).
+    value: limesurvey
+  - description: Version of LimeSurvey image to be used (e.g. v.5.2.13).
     displayName: Version of LimeSurvey
     name: IS_VERSION
     value: 5.2.13
@@ -403,3 +403,6 @@ objects:
       tls:
         termination: edge
       wildcardPolicy: None
+message: |
+  To view the deployment log (assumes oc CLI is installed):
+  $  oc -n ${PROJECT} logs -f dc/${SURVEY}limesurvey-app
