@@ -1,52 +1,3 @@
-limesurvey-docker - 12factor ❯ export TOOLS=599f0a-tools
-export PROJECT=599f0a-dev
-export SURVEY=testy
-
-limesurvey-docker - 12factor ❯ oc -n ${PROJECT} new-app --file=./ci/openshift/mysql.dc.yaml -p SURVEY_NAME=${SURVEY}
-imesurvey-docker - 12factor ❯ oc -n ${PROJECT} new-app --file=./ci/openshift/limesurvey-docker.dc.yaml -p SURVEY_NAME=${SURVEY} -p IS_NAMESPACE=${TOOLS} -p LIMESURVEY_ADMIN_EMAIL=Gary.T.Wong@gov.bc.ca -p LIMESURVEY_ADMIN_NAME="TESTY LimeSurvey Administrator"
-
----
-
-build
-
-oc -n 599f0a-tools process -f ci/openshift/limesurvey-docker.bc.yaml | oc -n 599f0a-tools apply -f -
-oc -n 599f0a-tools  start-build limesurvey-docker
-oc -n 599f0a-tools  logs -f build/limesurvey-docker-
-
-oc -n 599f0a-tools delete istag limesurvey-docker:5.2.13
-oc -n 599f0a-tools tag limesurvey-docker:latest limesurvey-docker:5.2.13
-
-export TOOLS=599f0a-tools
-export PROJECT=599f0a-dev
-export SURVEY=testa
-
-oc -n ${PROJECT} new-app --file=./ci/openshift/mysql.dc.yaml -p SURVEY_NAME=${SURVEY}
-oc -n ${PROJECT} new-app --file=./ci/openshift/limesurvey-docker.dc.yaml -p SURVEY_NAME=${SURVEY} -p IS_NAMESPACE=${TOOLS} -p LIMESURVEY_ADMIN_EMAIL=Gary.T.Wong@gov.bc.ca -p LIMESURVEY_ADMIN_NAME="TESTY LimeSurvey Administrator"
-
-MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE
-
-oc -n ${PROJECT} scale --replicas=0 dc/${SURVEY}limesurvey-app
-oc -n ${PROJECT} delete secret/${SURVEY}limesurvey-app dc/${SURVEY}limesurvey-app svc/${SURVEY}limesurvey-app route/${SURVEY}limesurvey-app hpa/${SURVEY}limesurvey-app pvc/${SURVEY}limesurvey-app-config pvc/${SURVEY}limesurvey-app-upload pvc/${SURVEY}limesurvey-app-plugins
-
-oc -n ${PROJECT} scale --replicas=0 dc/${SURVEY}limesurvey-app dc/${SURVEY}limesurvey-mysql
-oc -n ${PROJECT} delete all,secret,pvc,hpa -l app=${SURVEY}limesurvey
-
-===
-oc -n ${PROJECT} debug dc/testylimesurvey-app
-
-===
-kcfinder doesn't work on Chrome! but on FF yes
-
-<https://testylimesurvey.apps.silver.devops.gov.bc.ca/admin/authentication/sa/login>
-
-
-
-ABOVE to merge into bottom
-- put some stuff in the root file README.md for local dev
-
-
-
-
 ### Table of Contents
 
 <!-- TOC depthTo:2 -->
@@ -61,10 +12,12 @@ ABOVE to merge into bottom
     - [Application Deployment](#application-deployment)
       - [LimeSurvey installation](#limesurvey-installation)
     - [Log into the LimeSurvey app](#log-into-the-limesurvey-app)
-  - [Example Deployment](#example-deployment)
+  - [Example Deployment Steps](#example-deployment-steps)
     - [Set the environment variables](#set-the-environment-variables)
     - [Database Deployment](#database-deployment-1)
     - [App Deployment](#app-deployment)
+    - [Log into the LimeSurvey app](#log-into-the-limesurvey-app-1)
+  - [FAQ](#faq)
   - [Versioning](#versioning)
   - [Unreleased](#unreleased)
     - [Added](#added)
@@ -75,7 +28,7 @@ ABOVE to merge into bottom
 
 # OpenShift
 
-OpenShift 4 templates for [LimeSurvey](https://github.com/LimeSurvey/LimeSurvey), used within Natural Resources Ministries and ready for deployment on BC Government [OpenShift](https://www.openshift.com/). 
+OpenShift 4 templates for [LimeSurvey](https://github.com/LimeSurvey/LimeSurvey), used within Natural Resources Ministries and ready for deployment on BC Government [OpenShift](https://www.openshift.com/).
 
 ## Prerequisites
 
@@ -89,11 +42,11 @@ For build:
 - the [oc](https://docs.openshift.com/container-platform/4.6/cli_reference/openshift_cli/getting-started-cli.html) CLI tool, installed on your local workstation
 - access to this public [GitHub Repo](./)
 
-Once built, this image may be deployed to a separate `*-dev`, `*-test`, or `*-prod` namespace with the appropriate `system:image-puller` role.
+Once built, this image may be deployed to a separate `*-dev`, `*-test`, or `*-prod` namespace with the appropriate `system:image-puller` Openshift role assignment.
 
 For deployment:
 
-- Administrator access to an [Openshift](https://console.apps.silver.devops.gov.bc.ca/k8s/cluster/projects) Project namespace
+- Administrator access to an [Openshift](https://console.apps.silver.devops.gov.bc.ca/k8s/cluster/projects) Project `*-dev, *-test, *-prod` namespace
 - the [oc](https://docs.openshift.com/container-platform/3.11/cli_reference/get_started_cli.html) CLI tool, installed on your local workstation
 - access to this public [GitHub Repo](./)
 
@@ -108,20 +61,20 @@ Once deployed, any visitors to the site will require a modern browser (e.g. Edge
 
 ### Custom Image
 
-For a brand new build/image/imagestream/imagestreamtag in your new namespace, you would first create an image stream using this (forked) code (replace `<tools-namespace>` with your `*-tools` project namespace).
+For a brand new build/image/imagestream/imagestreamtag in your new namespace, you would first create an image stream using this (forked) code (replace `${TOOLS}` with your `*-tools` project namespace).
 
 ```bash
-oc -n <tools-namespace> create istag limesurvey:latest
+oc -n ${TOOLS} create istag limesurvey:latest
 oc -n ${TOOLS} process -f ci/openshift/limesurvey.bc.yaml | oc -n ${TOOLS} apply -f -
 oc -n ${TOOLS} start-build limesurvey
 oc -n ${TOOLS} logs -f build/limesurvey-<n>
 
 ```
 
-Tag the built image stream with the correct release version, matching the `major.minor` release tag at the source [repo](https://github.com/LimeSurvey/LimeSurvey). For example, this v5.2.13 was tagged via:
+Tag the built image stream with the correct release version, matching the `major.minor.patch` release tag at the source [repo](https://github.com/LimeSurvey/LimeSurvey/tags). For example, this v5.2.13 was tagged via:
 
 ```bash
-oc -n <tools-namespace> tag limesurvey:latest limesurvey:5.2.13
+oc -n ${TOOLS} tag limesurvey:latest limesurvey:5.2.13
 ```
 
 NOTE: To update our LimeSurvey image, we would update or override the Dockerfile ARG, and run the [Build](./limesurvey.bc.yaml). For example, this v5.2.13 was built with:
@@ -140,7 +93,7 @@ Deploy the DB using the correct SURVEY_NAME parameter (e.g. an acronym that will
 oc -n <project> new-app --file=./ci/openshift/mysql.dc.yaml -p SURVEY_NAME=<survey>
 ```
 
-All DB deployments are based on the out-of-the-box [OpenShift Database Image](https://docs.openshift.com/container-platform/3.11/using_images/db_images/mysql.html), and DB deployed objects (e.g. deployment configs, secrets, services, etc) have a naming convention of `<survey>limesurvey-mysql` in the Openshift console.
+All DB deployments are based on the out-of-the-box [OpenShift MySQL Database Image](https://docs.openshift.com/container-platform/3.11/using_images/db_images/mysql.html), and DB deployed objects (e.g. deployment configs, secrets, services, etc) have a naming convention of `${SURVEY}limesurvey-mysql` in the Openshift console.
 
 ### Application Deployment
 
@@ -160,7 +113,7 @@ Application deployed objects (e.g. deployment configs, secrets, services, etc) h
 
 #### LimeSurvey installation
 
-The database tables are automatically installed as part of the `docker-entrypoint.sh`, which checks for the existence of these tables first and if not present, will do a one-time initial install.  Subsequest pod restarts or deploys (as part of scaling up) see the populated database tables and skip the initial install.
+The database tables are automatically installed as part of the [docker-entrypoint.sh](../../app/docker-entrypoint.sh), which checks for the existence of these tables first and if not present, will do a one-time initial install.  Subsequest pod restarts or deploys (as part of scaling up) see the populated database tables and skip the initial install.
 
 ### Log into the LimeSurvey app
 
@@ -173,11 +126,9 @@ NOTE: The password is also stored as a secret in the OCP Console (`<survey>limes
 echo ${ADMIN_PASSWORD}
 ```
 
-## Example Deployment 
+## Example Deployment Steps
 
 As this is a template deployment, it may be easier to set environment variable for the deployment, so using the same PROJECT `599f0a-dev` and SURVEY `acme`:
-
-<details><summary>Deployment Steps</summary>
 
 ### Set the environment variables
 
@@ -228,10 +179,16 @@ oc -n ${PROJECT} new-app --file=./ci/openshift/mysql.dc.yaml -p SURVEY_NAME=${SU
 
 
 ```bash
-oc -n ${PROJECT} new-app --file=./ci/openshift/limesurvey.dc.yaml -p SURVEY_NAME=${SURVEY} -p IS_NAMESPACE=${TOOLS} -p LIMESURVEY_ADMIN_EMAIL=Joe.Smith@gov.bc.ca -p LIMESURVEY_ADMIN_NAME="ACME LimeSurvey Administrator"
+oc -n ${PROJECT} new-app --file=./ci/openshift/limesurvey.dc.yaml -p SURVEY_NAME=${SURVEY} -p IS_NAMESPACE=${TOOLS} -p LIMESURVEY_ADMIN_EMAIL=Joe.Smith@gov.bc.ca -p LIMESURVEY_ADMIN_NAME="ACME LimeSurvey Administrator" LIMESURVEY_SITEADMIN_EMAIL="Gary.T.Wong@gov.bc.ca"
 ```
 
---> Deploying template "599f0a-dev/nrmlimesurvey-app-dc" for "./ci/openshift/limesurvey.dc.yaml" to project 599f0a-dev
+```bash
+--> Deploying template "599f0a-dev/nrm-limesurvey-app-dc" for "./ci/openshift/limesurvey.dc.yaml" to project 599f0a-dev
+
+     nrm-limesurvey-app-dc
+     ---------
+     To view the deployment log (assumes oc CLI is installed):
+     $  oc -n ${PROJECT} logs -f dc/${SURVEY}limesurvey-app
 
      * With parameters:
         * Namespace=599f0a-tools
@@ -240,10 +197,24 @@ oc -n ${PROJECT} new-app --file=./ci/openshift/limesurvey.dc.yaml -p SURVEY_NAME
         * LimeSurvey Acronym=acme
         * Upload Folder size=1Gi
         * Administrator Account Name=admin
-        * Administrator Display Name=MAS LimeSurvey Administrator
-        * Administrator Password=dV0x1DuaBYjNhjCG # generated
+        * Administrator Display Name=ACME LimeSurvey Administrator
+        * Administrator Password=AuNvd7BksmetiFYA # generated
         * Administrator Email Address=Joe.Smith@gov.bc.ca
-        * Database Type=pgsql
+        * Database Table Prefix=
+        * Application Debug=0
+        * SQL Debug Toggle=0
+        * InnoDB Toggle=Y
+        * Show ScriptName Toggle=false
+        * Disable non-SSL Warning=true
+        * Site Administrator Email Address=
+        * Site Administrator Bounce Email Address=
+        * Site Administrator Display Name=
+        * Email method=smtp
+        * Email protocol=smtp
+        * Email SMTP Host=apps.smtp.gov.bc.ca
+        * Email SMTP SSL security=
+        * Apache2 Run User=default_user
+        * Apache2 Run Group=root
         * CPU_LIMIT=200m
         * MEMORY_LIMIT=512Mi
         * CPU_REQUEST=50m
@@ -261,66 +232,54 @@ oc -n ${PROJECT} new-app --file=./ci/openshift/limesurvey.dc.yaml -p SURVEY_NAME
     service "acmelimesurvey-app" created
     route.route.openshift.io "acmelimesurvey-app" created
 --> Success
-    Access your application via route 'acmelimesurvey.apps.silver.devops.gov.bc.ca'
+    Access your application via route 'acmelimesurvey.apps.silver.devops.gov.bc.ca' 
     Run 'oc status' to view your app.
 ```
 
 ### Log into the LimeSurvey app
 
-The Administrative interface is at <https://${SURVEY}.apps.silver.devops.gov.bc.ca/index.php/admin/> which is this example is <https://acmelimesurvey.apps.silver.devops.gov.bc.ca/> .
+The Administrative interface is at <https://${SURVEY}.apps.silver.devops.gov.bc.ca/admin/> which in this example is <https://acmelimesurvey.apps.silver.devops.gov.bc.ca/admin/authentication/sa/login> .
 
 and brings to you a screen like:
-![Admin Logon](./docs/images/AdminLogin.png)
+![Admin Logon](../../docs/images/AdminLogin.png)
 
 Once logged as an Admin, you'll be brought to the Welcome page:
-![Welcome Page](./docs/images/WelcomePage.png)
-
-</details>
+![Welcome Page](../../docs/images/WelcomePage.png)
 
 ## FAQ
 
 - to login the database, open the DB pod terminal (via OpenShift Console or `oc rsh`) and enter:
 
-  `psql -U ${POSTGREQL_USER} ${POSTGRESQL_DATABASE}`
+  `MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u $MYSQL_USER -D $MYSQL_DATABASE`
 
 - to clean-up database deployments:
 
-   `oc -n <project> delete secret/<survey>limesurvey-mysql dc/<survey>limesurvey-mysql svc/<survey>limesurvey-mysql`
+  ```bash
+  oc -n ${PROJECT} scale --replicas=0 dc/${SURVEY}limesurvey-mysql
+  oc -n ${PROJECT} delete secret/${SURVEY}limesurvey-mysql dc/${SURVEY}limesurvey-mysql svc/${SURVEY}limesurvey-mysql
+  ```
 
   NOTE: The Database Volume will be left as-is in case there is critical business data, so to delete:
 
-  `oc -n <project> delete pvc/<survey>limesurvey-mysql`
-
-  or if using environment variables:
-
   ```bash
-  oc -n ${PROJECT} delete secret/${SURVEY}limesurvey-mysql dc/${SURVEY}limesurvey-mysql svc/${SURVEY}limesurvey-mysql
   oc -n ${PROJECT} delete pvc/${SURVEY}limesurvey-mysql
   ```
 
 - to clean-up application deployments:
 
   ```bash
-  oc -n <project> delete secret/<survey>limesurvey-app dc/<survey>limesurvey-app svc/<survey>limesurvey-app route/<survey>limesurvey-app hpa/<survey>limesurvey-app`
+  oc -n ${PROJECT} scale --replicas=0 dc/${SURVEY}limesurvey-app 
+
+  oc -n ${PROJECT} delete secret/${SURVEY}limesurvey-app dc/${SURVEY}limesurvey-app svc/${SURVEY}limesurvey-app route/${SURVEY}limesurvey-app hpa/${SURVEY}limesurvey-app
   ```
 
   NOTE: The Configuration, Upload, and Plugins Volumes are left intact in case there are customized assets; if not (i.e. it's a brand-new survey):  
 
   ```bash
-  oc -n <project> delete pvc/<survey>limesurvey-app-config pvc/<survey>limesurvey-app-upload pvc/<survey>limesurvey-app-plugins`
-  ```
-
-  or if using environment variables:
-
-  ```bash
-  oc -n ${PROJECT} delete secret/${SURVEY}limesurvey-app dc/${SURVEY}limesurvey-app svc/${SURVEY}limesurvey-app route/${SURVEY}limesurvey-app hpa/${SURVEY}limesurvey-app pvc/${SURVEY}limesurvey-app-config pvc/${SURVEY}limesurvey-app-upload pvc/${SURVEY}limesurvey-app-plugins
+  oc -n ${PROJECT} delete pvc/${SURVEY}limesurvey-app-config pvc/${SURVEY}limesurvey-app-upload pvc/${SURVEY}limesurvey-app-plugins
   ```
 
 - to reset _all_ deployed objects (this will destroy all data and persistent volumes). Only do this on a botched initial install or if you have the DB backed up and ready to restore into the new wiped database.
-
-  `oc -n <project> delete all,secret,pvc -l app=<survey>limesurvey`
-
-  or if using environment variables:
 
   ```bash
   oc -n ${PROJECT} delete all,secret,pvc,hpa -l app=${SURVEY}limesurvey
@@ -328,12 +287,12 @@ Once logged as an Admin, you'll be brought to the Welcome page:
 
 - to dynamically get the pod name of the running pods, this is helpful:
 
-  `oc -n <project> get pods | grep <survey>limesurvey-app- | grep -v deploy | grep Running | awk '{print \$1}'`
+  `oc -n ${PROJECT} get pods | grep ${SURVEY}limesurvey-app- | grep -v deploy | grep Running | awk '{print \$1}'`
 
 - to customize the deployment with higher/lower resources, using environment variables, use  these examples:
 
   ```bash
-  oc -n ${PROJECT} new-app --file=./ci/openshift/postgresql.dc.yaml -p SURVEY_NAME=${SURVEY} -p MEMORY_LIMIT=768Mi -p DB_VOLUME_CAPACITY=1280M
+  oc -n ${PROJECT} new-app --file=./ci/openshift/mysql.dc.yaml -p SURVEY_NAME=${SURVEY} -p MEMORY_LIMIT=768Mi -p DB_VOLUME_CAPACITY=1280M
   
   oc -n ${PROJECT} new-app --file=./ci/openshift/limesurvey.dc.yaml -p SURVEY_NAME=${SURVEY} -p LIMESURVEY_ADMIN_EMAIL=John.Doe@gov.bc.ca -p LIMESURVEY_ADMIN_NAME="IITD LimeSurvey Administrator" -p REPLICA_MIN=2
   ```
@@ -344,7 +303,8 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Unreleased
 
-- add support for MySQL/MariaDB
+- add support for Azure deployments
+- updated CKEditor and/or kcfinder to support file uploads in Chrome browser
 
 ### Added
 
@@ -364,4 +324,4 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ### Removed
 
--
+- PostgreSQL support, as LimeSurvey has additional Comfort Backup feature for MySQL
